@@ -8,18 +8,20 @@ datasource db {
 }
 
 model User {
-  id             String          @id @default(uuid())
-  name           String
-  email          String          @unique
-  age            Int
-  // isAdmin        Boolean
-  role           Role            @default(BASIC)
-  // preferences   Json
-  blob           Bytes
-  writtenPosts   Post[]          @relation("WrittenPosts")
-  favoritePosts  Post[]          @relation("FavoritePosts")
-  userPreference UserPreference?
+  id            String @id @default(uuid())
+  name          String
+  email         String @unique
+  age           Int
+  role          Role   @default(BASIC)
+  writtenPosts  Post[] @relation("WrittenPosts")
+  favoritePosts Post[] @relation("FavoritePosts")
 
+  userPreference   UserPreference? @relation(fields: [userPreferenceId], references: [id])
+  userPreferenceId String?         @unique
+
+  // blob          Bytes
+  // isAdmin        Boolean
+  // preferences   Json
   @@unique([name, age])
   @@index([email])
 }
@@ -27,29 +29,33 @@ model User {
 model UserPreference {
   id           String  @id @default(uuid())
   emailUpdates Boolean
-  user         User    @relation(fields: [userId], references: [id])
-  userId       String  @unique
+
+  user User?
 }
 
 model Post {
-  id            String     @id @default(uuid())
+  id            String   @id @default(uuid())
   title         String
   averageRating Float
-  // rating        Decimal
-  createAt      DateTime   @default(now())
-  updateAt      DateTime   @updatedAt
-  author        User       @relation("WrittenPosts", fields: [authorId], references: [id])
-  authorId      String
-  favoritedBy   User?      @relation("FavoritePosts", fields: [favoritedById], references: [id])
-  favoritedById String?
-  categories    Category[]
+  createAt      DateTime @default(now())
+  updateAt      DateTime @updatedAt
 
+  author   User   @relation("WrittenPosts", fields: [authorId], references: [id])
+  authorId String
+
+  favoritedBy   User?   @relation("FavoritePosts", fields: [favoritedById], references: [id])
+  favoritedById String?
+
+  categories Category[]
+
+  // rating        Decimal
   // @@id([authorId])
 }
 
 model Category {
-  id    Int    @id @default(autoincrement())
-  name  String @unique
+  id   Int    @id @default(autoincrement())
+  name String @unique
+
   posts Post[]
 }
 
